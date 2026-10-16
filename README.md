@@ -17,7 +17,7 @@ app/         Streamlit dashboard and the inference code it needs
 models/      the trained weights the app uses (best.pt)
 data/        local only: clips, frames, labelled export (see data/README.md and data/labelling-rules.md)
 results/     runs.csv: one row per training run
-docs/        GenAI log, report, slides
+docs/        report and slides
 ```
 
 ## Setup
@@ -35,7 +35,7 @@ Training runs in Google Colab with a GPU runtime; save `best.pt` to Drive after 
 - One branch per task (`feat/…`, `fix/…`, `docs/…`), a pull request into `main`, and one teammate reviews before merging.
 - Notebooks: numbered in run order; the first cell has the title, the author and what they did, and a GenAI line; a markdown cell above every code cell; keep the outputs.
 - Every training run adds one row to `results/runs.csv` (settings and mAP50 / mAP50-95 on the validation set).
-- Log every real use of AI in `docs/genai-log.md` on the day it happens: the report's GenAI Disclosure is built from it.
+- Note how you used AI in the file you worked on (the GenAI line at the top of a notebook, a comment at the top of a script): what it helped with, an actual prompt, anything it got wrong, and what you decided yourself. The report's GenAI Disclosure is built from these notes.
 
 ## Upload (Canvas, Sun 15 Nov 2026, 18:00)
 
