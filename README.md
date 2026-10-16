@@ -12,10 +12,10 @@ Deep Learning (Computer Vision) challenge, Thomas More 2026: from a static-camer
 ## Structure
 
 ```
-notebooks/   numbered notebooks, run in order (see notebooks/README.md)
+notebooks/   numbered notebooks, run in order
 app/         Streamlit dashboard and the inference code it needs
 models/      the trained weights the app uses (best.pt)
-data/        local only: clips, frames, labelled export (see data/README.md and data/labelling-rules.md)
+data/        local only: clips, frames, labelled export (labelling rules in data/labelling-rules.md)
 docs/        report and slides
 ```
 
