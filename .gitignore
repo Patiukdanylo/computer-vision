@@ -13,7 +13,6 @@ venv/
 # Data: frames come from a YouTube stream and this repo is public, so only the docs are committed.
 # The labelled set lives in Roboflow (see data/README.md).
 data/*
-!data/README.md
 !data/labelling-rules.md
 *.mp4
 *.mov
