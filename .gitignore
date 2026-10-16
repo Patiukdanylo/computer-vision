@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS and editors
+.DS_Store
+.vscode/
+.idea/
+
+# Data: frames come from a YouTube stream and this repo is public, so only the docs are committed.
+# The labelled set lives in Roboflow (see data/README.md).
+data/*
+!data/README.md
+!data/labelling-rules.md
+*.mp4
+*.mov
+*.avi
+
+# Ultralytics output and downloaded pretrained weights; the weights we ship go in models/
+runs/
+*.pt
+!models/*.pt
+
+# Upload zip
+*.zip

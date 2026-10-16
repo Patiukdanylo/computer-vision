@@ -1,0 +1,12 @@
+# Python 3.11 or 3.12. Training runs on Colab (GPU); everything else runs locally.
+
+# YOLO training and inference; brings torch, OpenCV (cv2.findHomography), numpy, pandas, matplotlib
+ultralytics>=8.4,<9
+# Dashboard
+streamlit>=1.40
+# Cutting clips from YouTube (also needs ffmpeg: brew install ffmpeg)
+yt-dlp
+# Downloading the labelled dataset export
+roboflow>=1.1
+# Running the notebooks locally (VS Code / Jupyter)
+ipykernel

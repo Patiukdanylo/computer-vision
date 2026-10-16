@@ -1,0 +1,1 @@
+run,date,who,model,imgsz,epochs,batch,augmentation,freeze,train_frames,val_frames,mAP50,mAP50_95,precision,recall,notes
