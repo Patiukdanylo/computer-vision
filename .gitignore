@@ -14,9 +14,6 @@ venv/
 # The labelled set lives in Roboflow (see data/README.md).
 data/*
 !data/labelling-rules.md
-*.mp4
-*.mov
-*.avi
 
 # Ultralytics output and downloaded pretrained weights; the weights we ship go in models/
 runs/
