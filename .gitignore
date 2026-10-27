@@ -21,3 +21,6 @@ runs/
 
 # Upload zip
 *.zip
+
+data/frames/
+data/frames.zip
