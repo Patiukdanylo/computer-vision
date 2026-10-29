@@ -21,7 +21,6 @@ runs/
 
 # Upload zip (and every other zip, e.g. data/frames.zip)
 *.zip
-
 # Local data, see "Data" in README.md: the frames and everything built from them.
 # In data/labelled/ only the .ndjson exports are committed, not the Platform converter's output.
 data/frames/
@@ -29,3 +28,7 @@ data/labelled/*
 !data/labelled/*.ndjson
 data/cycle-ball-dataset/
 reports/eda/
+docs/*
+expl/*
+
+>>>>>>> c828f6a (feat(conf): add .gitignore)
