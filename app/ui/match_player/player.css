@@ -1,0 +1,238 @@
+:host,
+.summary,
+.player {
+  --team-a: #4DA3FF;
+  --team-b: #F2F2F2;
+  --ball: #FF4D4D;
+  --line: rgba(232, 234, 237, 0.35);
+  --muted: rgba(232, 234, 237, 0.55);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.share-bar {
+  height: 3px;
+  margin-top: 0.15rem;
+  background: var(--team-b);
+}
+
+.share-a {
+  height: 100%;
+  background: var(--team-a);
+}
+
+.player {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.left,
+.map {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Keeps the legend level with the bottom of the left column */
+.map {
+  justify-content: space-between;
+}
+
+.left {
+  gap: 1rem;
+}
+
+.clip {
+  width: 100%;
+  display: block;
+  border-radius: var(--st-base-radius);
+  background: #000;
+}
+
+/* Fills the height left under the video, so both columns end level */
+.readout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.readout-head,
+.readout-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr 1.2fr 1.2fr;
+  padding: 0.25rem 0;
+}
+
+.readout-head {
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+
+.readout-row span:not(:first-child),
+.readout-head span:not(:first-child) {
+  text-align: right;
+}
+
+.readout-row .name::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+}
+
+.readout-row.nearest {
+  font-weight: 600;
+}
+
+.readout-row.team-a .name::before { background: var(--team-a); }
+.readout-row.team-b .name::before { background: var(--team-b); }
+.readout-row.ball .name::before { background: var(--ball); }
+
+svg {
+  width: 100%;
+  display: block;
+}
+
+.floor { fill: #171B22; }
+.grid-line { fill: none; stroke: rgba(232, 234, 237, 0.07); stroke-width: 0.02; }
+
+.court * {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 0.04;
+}
+
+.center-spot { fill: var(--line); }
+
+.goal {
+  fill: rgba(232, 234, 237, 0.12);
+  stroke: var(--st-text-color);
+  stroke-width: 0.05;
+}
+
+.labels text {
+  font-size: 0.34px;
+  fill: var(--muted);
+}
+
+.spacing line {
+  stroke-width: 0.03;
+  opacity: 0.5;
+}
+
+.spacing text {
+  font-size: 0.3px;
+  text-anchor: middle;
+}
+
+.spacing .team-a line { stroke: var(--team-a); }
+.spacing .team-b line { stroke: var(--team-b); }
+.spacing .team-a text { fill: var(--team-a); }
+.spacing .team-b text { fill: var(--team-b); }
+
+.ball-link {
+  stroke: var(--st-text-color);
+  stroke-width: 0.035;
+  stroke-dasharray: 0.14 0.12;
+}
+
+.trails polyline {
+  fill: none;
+  stroke-width: 0.07;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.45;
+}
+
+.trails .team-a { stroke: var(--team-a); }
+.trails .team-b { stroke: var(--team-b); }
+.trails .ball { stroke: var(--ball); }
+
+.dots .team-a circle { fill: var(--team-a); }
+.dots .team-b circle { fill: var(--team-b); }
+.dots .ball circle { fill: var(--ball); stroke: rgba(255, 77, 77, 0.35); stroke-width: 0.14; }
+
+.dots text {
+  font-size: 0.32px;
+  font-weight: 600;
+  fill: #0E1116;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.legend span::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+}
+
+.legend .team-a::before { background: var(--team-a); }
+.legend .team-b::before { background: var(--team-b); }
+.legend .ball::before { background: var(--ball); }
+
+.legend .trail-key::before,
+.legend .link-key::before {
+  height: 2px;
+  width: 1rem;
+  vertical-align: middle;
+  border-radius: 0;
+  background: var(--muted);
+}
+
+.legend .link-key::before {
+  background: repeating-linear-gradient(90deg, var(--st-text-color) 0 3px, transparent 3px 5px);
+}
+
+@media (max-width: 800px) {
+  .player {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

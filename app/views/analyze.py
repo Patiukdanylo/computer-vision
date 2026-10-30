@@ -1,9 +1,13 @@
 """Upload a clip, process it, and show the video beside the 2D court."""
+import subprocess
+
 import streamlit as st
 
 from core.config import SAMPLE_CLIP
-from core.video_io import save_upload
+from core.demo_data import HZ, make_demo_tracks
+from core.video_io import get_duration, publish_clip, save_upload
 from ui import state
+from ui.match_player import render_match_player
 
 
 def on_upload():
@@ -25,15 +29,34 @@ def clip_screen(path, name):
     st.video(path)
     st.caption(f"{name} · {path.stat().st_size / 1e6:.1f} MB")
     with st.container(horizontal=True):
-        st.button("Process clip", type="primary", disabled=True, help="Available once the pipeline is built")
+        process = st.button("Process clip", type="primary", help="Shows demo data until the backend exists")
         st.button("Choose another clip", on_click=state.clear_clip)
+    if process:
+        try:
+            tracks = make_demo_tracks(get_duration(path))
+        except (subprocess.CalledProcessError, ValueError):
+            st.error("This file could not be read as a video.")
+        else:
+            state.set_run({"clip_name": publish_clip(path), "tracks": tracks})
+            st.rerun()
 
+
+def results_screen(run):
+    st.caption(":orange[Demo data: the map dots are fake, and the video has no detections yet.]")
+    render_match_player(f"/app/static/{run['clip_name']}", run["tracks"], HZ)
+    st.button("Process another clip", on_click=state.clear_clip)
+
+
+run = state.get_run()
+clip = state.get_clip()
 
 st.title("Cycle Ball Tactical Map")
-st.caption("From a static-camera clip to a synchronized 2D court.")
+if not run:
+    st.caption("From a static-camera clip to a synchronized 2D court.")
 
-clip = state.get_clip()
-if clip:
+if run:
+    results_screen(run)
+elif clip:
     clip_screen(*clip)
 else:
     upload_screen()

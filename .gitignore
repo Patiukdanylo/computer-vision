@@ -28,3 +28,4 @@ runs/
 
 # Clips and results written by the app
 outputs/
+app/static/
