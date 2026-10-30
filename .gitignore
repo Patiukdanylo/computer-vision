@@ -22,9 +22,8 @@ runs/
 # Upload zip (and every other zip, e.g. data/frames.zip)
 *.zip
 
-# ignore mds
-*.md
-!README.MD
+# Personal working notes
+/notes.md
 
 # Clips and results written by the app
 outputs/

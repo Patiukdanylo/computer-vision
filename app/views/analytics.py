@@ -3,7 +3,6 @@ import numpy as np
 import streamlit as st
 
 from core.analytics import occupancy, share_in_left_half, track_stats
-from core.demo_data import HZ
 from ui import charts, state
 
 CHART_OPTIONS = {"theme": None, "width": "stretch", "config": {"displayModeBar": False}}
@@ -14,15 +13,15 @@ def empty_screen():
     st.page_link("views/analyze.py", label="Go to Analyze")
 
 
-def analytics_screen(tracks):
+def analytics_screen(tracks, hz):
     st.caption(":orange[Demo data: every number on this page comes from fake positions.]")
-    stats = [track_stats(track, HZ) for track in tracks]
+    stats = [track_stats(track, hz) for track in tracks]
     by_kind = lambda kind: [track for track in tracks if track["kind"] == kind]
     team_distance = lambda kind: sum(row["distance_m"] for row in stats if row["kind"] == kind)
     ball = by_kind("ball")[0]
 
     columns = st.columns(4)
-    columns[0].metric("Clip length", f"{(len(ball['points']) - 1) / HZ:.0f} s")
+    columns[0].metric("Clip length", f"{(len(ball['points']) - 1) / hz:.0f} s")
     columns[1].metric("Team A distance", f"{team_distance('team-a'):.0f} m")
     columns[2].metric("Team B distance", f"{team_distance('team-b'):.0f} m")
     columns[3].metric("Ball in left half", f"{share_in_left_half(ball):.0%}")
@@ -46,7 +45,7 @@ def analytics_screen(tracks):
 
     st.subheader("Ball position over time")
     x_positions = np.array(ball["points"])[:, 0]
-    st.plotly_chart(charts.ball_position_line(np.arange(len(x_positions)) / HZ, x_positions), **CHART_OPTIONS)
+    st.plotly_chart(charts.ball_position_line(np.arange(len(x_positions)) / hz, x_positions), **CHART_OPTIONS)
 
     with st.expander("See the numbers as a table"):
         rows = [
@@ -64,6 +63,6 @@ def analytics_screen(tracks):
 st.title("Analytics")
 run = state.get_run()
 if run:
-    analytics_screen(run["tracks"])
+    analytics_screen(run["tracks"], run["hz"])
 else:
     empty_screen()

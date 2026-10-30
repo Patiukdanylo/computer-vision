@@ -1,6 +1,4 @@
 """Upload a clip, process it, and show the video beside the 2D court."""
-import subprocess
-
 import streamlit as st
 
 from core.config import DETECTION_CLASSES, SAMPLE_CLIP
@@ -49,16 +47,16 @@ def clip_screen(path, name):
     if process:
         try:
             tracks = make_demo_tracks(get_duration(path))
-        except (subprocess.CalledProcessError, ValueError):
+        except ValueError:
             st.error("This file could not be read as a video.")
         else:
-            state.set_run({"clip_name": publish_clip(path), "tracks": tracks, "confidences": confidences})
+            state.set_run({"clip_name": publish_clip(path), "tracks": tracks, "hz": HZ, "confidences": confidences})
             st.rerun()
 
 
 def results_screen(run):
     st.caption(":orange[Demo data: the map dots are fake, and the video has no detections yet.]")
-    render_match_player(f"/app/static/{run['clip_name']}", run["tracks"], HZ)
+    render_match_player(f"/app/static/{run['clip_name']}", run["tracks"], run["hz"])
     thresholds = " · ".join(f"{name.capitalize()} {value:.2f}" for name, value in run["confidences"].items())
     st.caption(f"Confidence thresholds: {thresholds}")
     st.button("Process another clip", on_click=state.clear_clip)

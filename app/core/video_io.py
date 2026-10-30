@@ -1,8 +1,9 @@
 """Saving and removing clips on disk."""
 import shutil
-import subprocess
 import uuid
 from pathlib import Path
+
+import cv2
 
 from core.config import STATIC_DIR, UPLOADS_DIR
 
@@ -22,9 +23,14 @@ def delete_upload(path: Path) -> None:
 
 
 def get_duration(path: Path) -> float:
-    """Clip length in seconds. Raises if the file is not a readable video."""
-    command = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)]
-    return float(subprocess.run(command, check=True, capture_output=True, text=True).stdout)
+    """Clip length in seconds. Raises ValueError if the file is not a readable video."""
+    capture = cv2.VideoCapture(str(path))
+    frames = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    fps = capture.get(cv2.CAP_PROP_FPS)
+    capture.release()
+    if frames <= 0 or fps <= 0:
+        raise ValueError(f"Not a readable video: {path.name}")
+    return frames / fps
 
 
 def publish_clip(path: Path) -> str:

@@ -11,7 +11,8 @@ PIPELINE_STEPS = [
     ("2D map", "The video's own time decides which positions to show.", "Demo data"),
 ]
 
-# Baseline E0a and fine-tune E1 from modeling/README.md (branch feat/base-model), both at 640 px
+# Baseline E0a and fine-tune E1 from modeling/README.md (branch feat/base-model), both at 640 px.
+# Measured on an older split: update these once they are re-run on the split in configs/dataset.yaml.
 MODEL_RESULTS = [("Player", 0.176, 0.935), ("Ball", 0.727, 0.995), ("Bike", 0.673, 0.818)]
 
 LIMITS = [
@@ -43,9 +44,9 @@ st.subheader("The model")
 st.markdown("AP50 on validation, after fine-tuning YOLO11s, compared with the same model before it.")
 for column, (name, before, after) in zip(st.columns(3), MODEL_RESULTS):
     column.metric(name, f"{after:.3f}", f"{after - before:+.3f} vs pretrained")
-st.caption("Measured at 640 px on 25 validation images with only 13 balls, so read these as early results. "
-           "The pretrained ball score flatters it: it found balls only at confidence 0.06 or lower, "
-           "which is useless at a normal threshold.")
+st.caption(":orange[Early results from an older split with 13 validation balls, not the 48 / 25 split above "
+           "(25 balls). They need re-running on the current split.] The pretrained ball score flatters it: "
+           "it found balls only at confidence 0.06 or lower, which is useless at a normal threshold.")
 
 st.subheader("Homography: from camera view to top-down")
 st.markdown("The camera sees the court at an angle, so its rectangle looks like a trapezoid. If we know where at "
