@@ -1,0 +1,20 @@
+# Settings for data/prepare_dataset.py, which turns our labelled export into a YOLO dataset.
+# The EDA notebook (notebooks/01_dataset_eda.ipynb) reads this file too, so both use the same paths and split.
+# All paths are relative to the repo root.
+
+# Export from Ultralytics Platform: one JSON object per line (line 1 = class names, then one line per image).
+# The dataset version we train on (see "Dataset versions" in README.md). Committed to git.
+labels_ndjson: data/labelled/cycle-ball-v1.ndjson
+# Our video. The labelled frames are cut straight out of it, so the dataset needs nothing outside the repo.
+video: data/cycle-ball.mp4
+# JPEG quality (0-100) of the saved frames. 95 is OpenCV's default: the compression barely changes the image.
+jpeg_quality: 95
+# Where the YOLO dataset is written: images/{train,val}, labels/{train,val} and data.yaml (not in git).
+output_dir: data/cycle-ball-dataset
+
+# Time-based split: labelled frames from val_first_frame to val_last_frame (both included) go to val,
+# every other labelled frame goes to train. Frames 1-234 are the first 20% of the 1170-frame video.
+# Why the start and not the end: from frame ~960 the referee puts the ball down and it lies still until the
+# end of the clip (a restart), so a val set from the end would only test a ball that doesn't move.
+val_first_frame: 1
+val_last_frame: 234
