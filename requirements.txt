@@ -4,6 +4,8 @@
 ultralytics>=8.4,<9
 # Dashboard; pinned because custom styling can break on upgrades
 streamlit==1.66.1
+# Analytics charts
+plotly==7.1.0
 # Cutting clips from YouTube (also needs ffmpeg: brew install ffmpeg)
 yt-dlp
 # Running the notebooks locally (VS Code / Jupyter)

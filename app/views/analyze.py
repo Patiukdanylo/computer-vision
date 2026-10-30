@@ -3,7 +3,7 @@ import subprocess
 
 import streamlit as st
 
-from core.config import SAMPLE_CLIP
+from core.config import DETECTION_CLASSES, SAMPLE_CLIP
 from core.demo_data import HZ, make_demo_tracks
 from core.video_io import get_duration, publish_clip, save_upload
 from ui import state
@@ -25,9 +25,24 @@ def upload_screen():
             st.rerun()
 
 
+def confidence_sliders() -> dict[str, float]:
+    saved = state.get_confidences()
+    st.markdown("Confidence thresholds")
+    columns = st.columns(len(DETECTION_CLASSES))
+    chosen = {
+        name: column.slider(name.capitalize(), 0.05, 0.95, saved[name], 0.05, key=f"confidence_{name}")
+        for name, column in zip(DETECTION_CLASSES, columns)
+    }
+    state.set_confidences(chosen)
+    st.caption("A detection below its class threshold is dropped: lower finds more, but adds false detections. "
+               ":orange[No effect yet, because the backend doesn't exist.]")
+    return chosen
+
+
 def clip_screen(path, name):
     st.video(path)
     st.caption(f"{name} · {path.stat().st_size / 1e6:.1f} MB")
+    confidences = confidence_sliders()
     with st.container(horizontal=True):
         process = st.button("Process clip", type="primary", help="Shows demo data until the backend exists")
         st.button("Choose another clip", on_click=state.clear_clip)
@@ -37,13 +52,15 @@ def clip_screen(path, name):
         except (subprocess.CalledProcessError, ValueError):
             st.error("This file could not be read as a video.")
         else:
-            state.set_run({"clip_name": publish_clip(path), "tracks": tracks})
+            state.set_run({"clip_name": publish_clip(path), "tracks": tracks, "confidences": confidences})
             st.rerun()
 
 
 def results_screen(run):
     st.caption(":orange[Demo data: the map dots are fake, and the video has no detections yet.]")
     render_match_player(f"/app/static/{run['clip_name']}", run["tracks"], HZ)
+    thresholds = " · ".join(f"{name.capitalize()} {value:.2f}" for name, value in run["confidences"].items())
+    st.caption(f"Confidence thresholds: {thresholds}")
     st.button("Process another clip", on_click=state.clear_clip)
 
 

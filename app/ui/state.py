@@ -3,6 +3,7 @@ from pathlib import Path
 
 import streamlit as st
 
+from core.config import DEFAULT_CONFIDENCE, DETECTION_CLASSES
 from core.video_io import delete_upload, unpublish_clip
 
 
@@ -20,6 +21,14 @@ def get_run() -> dict | None:
 
 def set_run(run: dict) -> None:
     st.session_state["run"] = run
+
+
+def get_confidences() -> dict[str, float]:
+    return st.session_state.get("confidences", dict.fromkeys(DETECTION_CLASSES, DEFAULT_CONFIDENCE))
+
+
+def set_confidences(confidences: dict[str, float]) -> None:
+    st.session_state["confidences"] = confidences
 
 
 def clear_clip() -> None:

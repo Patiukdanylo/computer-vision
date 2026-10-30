@@ -9,3 +9,7 @@ STATIC_DIR = ROOT / "app" / "static"
 # International cycle ball court, in metres
 COURT_LENGTH = 14.0
 COURT_WIDTH = 11.0
+
+# Classes in our labelled dataset, and the starting point for each confidence slider (Ultralytics' default)
+DETECTION_CLASSES = ("player", "ball", "bike", "goal")
+DEFAULT_CONFIDENCE = 0.25
