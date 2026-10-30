@@ -58,3 +58,20 @@
 .st-key-nav-link-active a p {
   color: var(--app-text);
 }
+
+/* Large, quiet drop zone */
+.st-key-dropzone [data-testid="stFileUploaderDropzone"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 5rem 2rem;
+  background: transparent;
+  border: 1px dashed rgba(232, 234, 237, 0.25);
+  transition: border-color 0.15s ease;
+}
+
+.st-key-dropzone [data-testid="stFileUploaderDropzone"]:hover {
+  border-color: var(--app-accent);
+}

@@ -25,3 +25,6 @@ runs/
 # ignore mds
 *.md
 !README.MD
+
+# Clips and results written by the app
+outputs/
