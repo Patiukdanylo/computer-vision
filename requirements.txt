@@ -6,7 +6,5 @@ ultralytics>=8.4,<9
 streamlit==1.66.1
 # Cutting clips from YouTube (also needs ffmpeg: brew install ffmpeg)
 yt-dlp
-# Downloading the labelled dataset export
-roboflow>=1.1
 # Running the notebooks locally (VS Code / Jupyter)
 ipykernel
