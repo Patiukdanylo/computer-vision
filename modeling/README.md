@@ -2,7 +2,7 @@
 
 **Owner:** Artem Kucheruk — Modeling lead
 **Rubric weight:** Modeling & Fine-Tuning Core — **35%**
-**Status:** plan. Fill the [experiment log](#9-experiment-log-map-log) as runs complete.
+**Status (29 Oct):** E0 baseline and E1 first fine-tune done on dataset v1, in [`01_baseline_finetune.ipynb`](01_baseline_finetune.ipynb). Results are in the [experiment log](#9-experiment-log-map-log), the dated history is in [PROGRESS.md](PROGRESS.md). Next: E2 (image size 1280) on Colab, and a re-run on dataset v2 once data cleaning is done.
 
 > Sport: **cycle ball** (2 vs 2 on bicycles, indoor court 14 × 11 m, goals 2 × 2 m; ball played with the bike and the head, except when defending the goal). Static camera. Framework: **Ultralytics YOLO11**.
 >
@@ -56,10 +56,21 @@ C sends back failure hypotheses → they become the next experiments (column *Tr
 
 ### Outputs to D (Pipeline)
 
-- `best.pt` of the chosen model, class names.
-- Recommended `imgsz`, `iou`, and **per-class `conf`** (ball threshold lower than players).
-- Measured inference time (ms/frame) on the machine running the app, for the chosen model size.
-- Note: D projects the **bottom-centre** of player boxes onto the court. A player box covers rider **and** bike, so its bottom edge is where the wheels touch the floor, and that edge's accuracy matters more than the top. Relevant to how A labels occluded players.
+- `best.pt` of the chosen model, class names. Current model: `runs/modeling/E1_640_v1/weights/best.pt`, `imgsz=640`, about 8 ms per frame on an M4 Mac (`mps`).
+- Recommended `imgsz`, `iou`, and **per-class `conf`**.
+- **`detections.csv`**, one row per box. Format agreed with D on 29 Oct:
+
+  ```
+  frame,class,confidence,x1,y1,x2,y2
+  ```
+
+  - `frame`: starts at 1, runs 1–1170. Frame N is the Nth frame of `cycle-ball.mp4` (OpenCV index N−1) and matches the dataset file names (`frame_00960.jpg` = frame 960). Checked against the decoded video.
+  - `class`: `player` (rider only), `bike` or `ball`. Goals are left out.
+  - `confidence`: boxes with confidence ≥ 0.25.
+  - `x1, y1, x2, y2`: box corners in pixels of the original 3024 × 1078 frame.
+  - Frames with no detections have no rows.
+- **Map point:** the bottom-centre of the **bike** box, where the wheels touch the floor. The `player` box is the rider only and ends at the pedals; its bottom-centre is the fallback when no bike is detected (bike recall is lower: 0.67 vs 0.89 on val). For the ball, use the box centre, which is only correct when the ball is on the floor.
+- **Annotated video:** all 1,170 frames in order, 3024 × 1078, written at **46.784 fps** (140400/3001), so it lasts exactly 25.0 s. The file header says 120 fps, which is wrong: the video has a variable frame rate. OpenCV's `CAP_PROP_FPS` reports the correct 46.784. Keep duplicate frames (e.g. frames 12 and 13), or the sync with the minimap breaks.
 
 ---
 
@@ -80,7 +91,10 @@ The brief says: use a pretrained detector for players/referees, and annotate the
 | **A. One model, all classes labeled** *(recommended)* | Classes `ball`, `player` (**rider + bike in one box**), plus `referee` only if referees stand on the court in our footage. Players are pre-labeled with the Ultralytics Platform's smart annotation (SAM) and corrected by hand; the ball is labeled manually. | One box per player whose bottom edge = wheels on the floor (what D needs); one inference pass. | Model must learn the new `player` shape (cheap: ~4 per frame). |
 | B. Pretrained `person` + fine-tuned ball-only model | COCO `person` (`classes=[0]`) for players + a **ball-only** model | No forgetting risk | The `person` box excludes the bike, so its bottom edge is the pedals, not the floor → court positions are off; 2× inference cost. Not recommended for cycle ball. |
 
-Decide with A **before labeling starts**. The rest of this document assumes option A.
+**Decision (dataset v1):** A labelled **`player` (rider only), `ball`, `bike` and `goal` as separate classes**, which is neither option above. Everything is labelled, so there is no forgetting risk. Consequences:
+- `player` and `bike` map 1:1 to COCO `person` and `bicycle`, so the E0 baseline is like-for-like on every class except `goal`.
+- The court position comes from the bottom of the `bike` box (see §2, outputs to D).
+- `goal` is static in a fixed camera, so it is near-perfect and pushes up the all-class mAP. Compare per class.
 
 ---
 
@@ -89,37 +103,12 @@ Decide with A **before labeling starts**. The rest of this document assumes opti
 Purpose: the **"before"** of the incremental delta. Same val split as every later experiment.
 
 1. Model: COCO-pretrained `yolo11s.pt` — same size as the fine-tune reference, so the delta measures the data, not the model size.
-2. COCO has `person` (id 0), `bicycle` (id 1) and `sports ball` (id 32). Mapping: player/referee → `person`, ball → `sports ball`. The `person` box covers the rider but not the wheels, so its IoU with our rider + bike boxes is reduced: the baseline player AP is pessimistic.
-3. `yolo val` needs class ids to match the model. Make a copy of the val set with remapped label ids and a data yaml with COCO's 80 `names` (copy them from Ultralytics `cfg/datasets/coco.yaml`):
+2. Mapping to COCO ids: player → `person` (0), bike → `bicycle` (1), ball → `sports ball` (32). `goal` has no COCO class and is dropped from the baseline.
+3. `yolo val` matches by class id, so the notebook makes a remapped copy of val (`runs/modeling/E0_data_v1/`) with a yaml holding COCO's 80 names. Implementation: [`01_baseline_finetune.ipynb`](01_baseline_finetune.ipynb) §2. AP is computed only for classes present in the ground truth, so the other 77 COCO classes don't affect the score.
 
-   ```python
-   # remap val labels to COCO ids for the E0 baseline
-   import shutil
-   from pathlib import Path
+**Result (v1):** see the log in §9. `person` was the *worst* class (AP50 0.18): COCO boxes the officials' table, spectators and the referee. `sports ball` gets AP50 0.73 even though recall is 0: it finds 11/13 balls but only with confidence 0.002–0.06, and AP depends only on ranking. In practice the baseline is useless for the ball.
 
-   names = ["ball", "player", "referee"]                         # order from data.yaml
-   to_coco = {"ball": 32, "player": 0, "referee": 0}
-
-   src, dst = Path("data/valid"), Path("data/baseline_coco/valid")
-   shutil.copytree(src / "images", dst / "images", dirs_exist_ok=True)
-   (dst / "labels").mkdir(parents=True, exist_ok=True)
-   for f in (src / "labels").glob("*.txt"):
-       rows = [l.split() for l in f.read_text().splitlines() if l.strip()]
-       (dst / "labels" / f.name).write_text(
-           "\n".join(" ".join([str(to_coco[names[int(c)]]), *box]) for c, *box in rows))
-   ```
-
-   ```bash
-   yolo detect val model=yolo11s.pt data=baseline_coco.yaml imgsz=640  project=runs/modeling name=E0_640
-   yolo detect val model=yolo11s.pt data=baseline_coco.yaml imgsz=1280 project=runs/modeling name=E0_1280
-   ```
-
-   AP is computed only for classes present in the ground truth, so detections of unrelated COCO classes do not affect `person` / `sports ball` AP.
-4. Qualitative check on the video: `yolo predict model=yolo11s.pt source=clip.mp4 classes=[0,32] save=True`.
-
-**Expected:** reasonable `person` AP (limited by the box-shape mismatch above) and poor `sports ball` AP (COCO balls are mostly large and close-up; a cycle ball pressed against a wheel is not). That gap justifies the annotation effort. Also expect `person` false positives on spectators, substitutes and officials at the court edge if A does not label them. Give those to C.
-
-**Comparability:** ball AP is a like-for-like delta. People are only roughly comparable (baseline `person` = rider without the bike, merged with referee).
+**Comparability:** all three classes compare like-for-like with E1. The E1 all-class mAP also includes `goal`, so compare the 3-class mean.
 
 ---
 
@@ -131,15 +120,14 @@ Purpose: the **"before"** of the incremental delta. Same val split as every late
 - Write the **hypothesis before the run**, and the verdict after.
 - Same dataset version and val split across compared rows. If A releases a new version, re-run E0 and the champion on it.
 - **Val is tiny → mAP is noisy.** With ~15 val balls, one ball ≈ 6–7 AP points. Differences under ~3 points are not evidence. Re-run the top two configs with 3 seeds and report mean ± std.
-- **Selection metric:** ball AP@50 (the object we added data for). Always report AP@50:95 and overall mAP too.
+- **Selection metric:** mean **AP@50:95 over ball, player and bike**. *(Changed 29 Oct: the plan was ball AP@50, but E1 already reaches 0.995 on it, so it can no longer tell configs apart. `goal` is excluded because it is near-perfect.)* Always report ball AP@50:95, AP@50 and the all-class mAP too.
+- **Run names carry the dataset version** (`E1_640_v1`). The notebook skips training when `best.pt` already exists, so a new dataset version needs a new name.
 
 ### Reference fine-tune (E1, pure defaults)
 
-```bash
-yolo detect train data=data.yaml model=yolo11s.pt seed=0 project=runs/modeling name=E1_default
-```
+In [`01_baseline_finetune.ipynb`](01_baseline_finetune.ipynb) §3. Defaults: `imgsz=640`, `epochs=100`, `patience=100`, `batch=16`, `freeze=None`, default augmentation, `optimizer=auto`. Device: `device=mps` on Mac, `device=0` on Colab/Kaggle GPU. Record the device and Ultralytics version in the log.
 
-Defaults: `imgsz=640`, `epochs=100`, `patience=100`, `batch=16`, `freeze=None`, default augmentation, `optimizer=auto`. Device: `device=mps` on Mac, `device=0` on Colab/Kaggle GPU. Record device and Ultralytics version (`yolo checks`) in the log.
+**Hardware limit:** the Mac (M4, 16 GB) handles 640 (100 epochs ≈ 24 min). At `imgsz=1280` it ran out of memory and swapped (~12 min per batch, i.e. days per run), so E2 and every later 1280 run go on Colab.
 
 ### Sweep
 
@@ -147,7 +135,7 @@ Defaults: `imgsz=640`, `epochs=100`, `patience=100`, `batch=16`, `freeze=None`, 
 |---|---|---|---|---|
 | E0 | Baseline, no training | `yolo11s.pt` @640, @1280 | Finds people, misses the ball | per-class AP |
 | E1 | Defaults fine-tune | as above | Large ball gain over E0 | Δ vs E0 |
-| E2 | Image size | 640 → 960 → 1280 | The ball is small in a full-court shot (measure the median ball box width in px from the v1 labels). A 1920-px frame shrinks 3× at 640, often below the stride-8 grid of the finest head (§8.1). Larger input → ball recall up. | ball recall / AP, train time, ms/frame |
+| E2 | Image size | 640 → 960 → 1280 (Colab) | The 3024 px frame shrinks 4.7× at 640, so the median val ball (28 px) becomes ~6 px, below the stride-8 grid (§8.1). *Updated after E1:* ball AP50 is already 0.995 at 640, so the expected gain is in **AP50-95** (box precision) for ball and bike. Evidence: the untrained E0 improves from 640 to 1280 on ball (AP50 0.73 → 0.93) and bike (AP50-95 0.39 → 0.58). | ball and bike AP50-95, train time, ms/frame |
 | E3 | Frozen layers | `freeze=0` / `11` (backbone) / `23` (all but head) | ~50 images → freezing reduces overfitting. Counter-hypothesis: COCO features are weak for a blurred tiny ball, so full fine-tuning wins. | train vs val loss gap, ball AP |
 | E4 | Augmentations | see §6 | Each change has its own hypothesis in §6 | ball AP, FN types from C |
 | E5 | Epochs | 50 / 100 / 200 with `patience=50` | Small data converges fast; long runs overfit | epoch of best fitness, val loss curve |
@@ -224,7 +212,7 @@ Static camera, flat indoor court, small fast ball that is often pressed against 
 - **LR schedule:** linear decay to `lrf=0.01 × lr`.
 - **EMA** of weights is used for validation and saving.
 - **`close_mosaic=10`:** mosaic off for the last 10 epochs.
-- **`best.pt` selection:** fitness = `0.1·mAP50 + 0.9·mAP50-95` over **all classes** — not ball-specific.
+- **`best.pt` selection:** fitness = **mAP50-95 over all classes** (weights `[0, 0, 0, 1]` in Ultralytics 8.4.192, `utils/metrics.py`; older versions used `0.1·mAP50 + 0.9·mAP50-95`). It is not ball-specific, and it includes `goal`.
 
 *(Accumulation, warmup, and auto-optimizer details are from `ultralytics/engine/trainer.py`. Re-check them in the installed version before the defense.)*
 
@@ -242,6 +230,8 @@ Static camera, flat indoor court, small fast ball that is often pressed against 
 - What does each loss term measure, and what did its curve tell you?
 - Why is mAP@50:95 so much lower than mAP@50 for the ball?
 - How do you know the improvement is not noise? → seeds, val size, held-out test.
+- Why does the E0 ball have recall 0 but AP50 0.73? → P/R are measured at one confidence threshold, while AP uses only the ranking. The ball boxes are correct but have confidence ≤ 0.06 (notebook §2).
+- Why was the pretrained `person` class so bad? → it boxes the officials' table, spectators and the referee (precision 0.18).
 
 ---
 
@@ -259,23 +249,29 @@ for i, c in enumerate(r.box.ap_class_index):
     print(f"{m.names[c]:<10} AP50={r.box.ap50[i]:.3f}  AP50-95={r.box.ap[i]:.3f}")
 ```
 
-| ID | Date | Data ver | Model | imgsz | Epochs (best) | Freeze | Aug Δ | Seed | mAP50 all | mAP50-95 all | Ball AP50 | Ball AP50-95 | Player AP50 | Triggered by | Hypothesis | Verdict / next |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| E0a | | | yolo11s (COCO) | 640 | — | — | — | — | | | | | (person) | brief | Pretrained misses ball | |
-| E0b | | | yolo11s (COCO) | 1280 | — | — | — | — | | | | | (person) | brief | Upscaling alone helps ball a bit | |
-| E1 | | | yolo11s | 640 | 100 () | — | default | 0 | | | | | | — | Defaults beat E0 on ball | |
+| ID | Date | Data ver | Model | imgsz | Epochs (best) | Freeze | Aug Δ | Seed | mAP50 all | mAP50-95 all | Ball AP50 | Ball AP50-95 | Player AP50 | Bike AP50 | Triggered by | Hypothesis | Verdict / next |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| E0a | 29 Oct | v1 | yolo11s (COCO) | 640 | — | — | — | — | 0.525 | 0.315 | 0.727 | 0.468 | 0.176 (person) | 0.673 | brief | Pretrained misses ball | Partly wrong: ball found but confidence ≤ 0.06 (R = 0 at a usable threshold). Player is worst: officials, spectators, referee. |
+| E0b | 29 Oct | v1 | yolo11s (COCO) | 1280 | — | — | — | — | 0.629 | 0.447 | 0.925 | 0.663 | 0.160 (person) | 0.803 | brief | Upscaling alone helps ball a bit | Confirmed, strongly: ball +0.20 AP50, bike AP50-95 +0.19. Motivates E2. |
+| E1 | 29 Oct | v1 | yolo11s | 640 | 100 (65) | — | default | 0 | 0.936 | 0.687 | 0.995 | 0.697 | 0.935 | 0.818 | — | Defaults beat E0; ball stays weakest at ~6 px | Beats E0 on every class (3-class mean AP50 0.525 → 0.916). Ball *not* the weakest: refuted. Bike weakest (R 0.67). Next: E2 @1280 on Colab. |
+
+*mAP "all" = the classes present in that run (E0: ball, player, bike; E1 adds goal). Mac M4 `mps`, Ultralytics 8.4.192, torch 2.15. E1 trained in 23.7 min. E1 @1280 on the Mac was aborted after 3 batches (out of memory, see §5).*
 
 ---
 
 ## 10. Checklist
 
-- [ ] Agree the class set with A (§3); send the §2 input requirements.
-- [ ] Environment: `pip install ultralytics`, `yolo checks`, record version.
-- [ ] E0 baseline @640 and @1280 → log.
-- [ ] E1 defaults → log; hand the run folder to C.
-- [ ] E2–E6, each row with a hypothesis; feed in C's hypotheses.
+- [x] Class set: A chose `player` / `ball` / `bike` / `goal` (§3).
+- [x] Environment: `.venv`, Ultralytics 8.4.192, torch 2.15, `mps`.
+- [x] E0 baseline @640 and @1280 → log.
+- [x] E1 defaults → log.
+- [ ] Hand the run folders (`runs/modeling/E0_*_v1`, `E1_640_v1`) to C. Feedback for A: wrong `player` box in `frame_00749`; 11 train frames with fewer than 4 bikes labelled.
+- [ ] D: generate `detections.csv` and the annotated video (format agreed in §2).
+- [ ] Dataset v2 (after cleaning) → re-run E0 and E1 with `VERSION = "v2"`.
+- [ ] Ask A for a held-out test clip; v1 has none.
+- [ ] E2 @1280 on Colab, then E3–E6, each row with a hypothesis; feed in C's hypotheses.
 - [ ] Final config × 3 seeds; evaluate the held-out test set once.
-- [ ] Hand-off to D: `best.pt`, `imgsz`, per-class `conf`, ms/frame.
+- [ ] Hand-off to D: final `best.pt`, `imgsz`, per-class `conf`, ms/frame.
 - [ ] Defense: rehearse §8 and be able to justify every log row without notes.
 
 ## 11. Artifacts
@@ -299,3 +295,4 @@ Dataset, `runs/` and `*.pt` weights are not committed (size).
 | Date | Tool | Used for | My review |
 |---|---|---|---|
 | 2026-10-27 | Claude (Claude Code) | First draft of this modeling plan from the brief | |
+| 2026-10-29 | Claude (Claude Code) | Dataset v1 check; notebook `01_baseline_finetune.ipynb` (code, explanations, conclusions); running E0/E1; checking the video's fps and frame numbering; the CSV format for D; updating this plan and PROGRESS.md | |

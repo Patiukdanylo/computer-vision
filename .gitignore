@@ -13,6 +13,10 @@ venv/
 # Data: frames come from a YouTube stream and this repo is public, so frames stay local.
 # The label exports (.ndjson, text only) are committed; see "Data" in README.md.
 !data/labelling-rules.md
+# Data: frames come from a YouTube stream and this repo is public, so only the docs are committed.
+# The labelled set lives in Roboflow (see data/README.md).
+data/*
+!data/*.md
 
 # Ultralytics output and downloaded pretrained weights; the weights we ship go in models/
 runs/
@@ -20,6 +24,8 @@ runs/
 !models/*.pt
 
 # Upload zip (and every other zip, e.g. data/frames.zip)
+PROGRESS.md
+# Upload zip
 *.zip
 # Local data, see "Data" in README.md: the frames and everything built from them.
 # In data/labelled/ only the .ndjson exports are committed, not the Platform converter's output.
@@ -31,4 +37,3 @@ reports/eda/
 docs/*
 expl/*
 
->>>>>>> c828f6a (feat(conf): add .gitignore)
