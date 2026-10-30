@@ -1,0 +1,60 @@
+/* Scoped tweaks the theme can't do. Streamlit is pinned because these selectors can change. */
+
+:root {
+  /* Same values as .streamlit/config.toml: theme variables aren't available in page CSS */
+  --app-bg: #0E1116;
+  --app-border: #2A303A;
+  --app-text: #E8EAED;
+  --app-text-muted: rgba(232, 234, 237, 0.55);
+  --app-accent: #F5B83D;
+}
+
+/* Streamlit's own header would sit on top of the navbar */
+[data-testid="stHeader"] {
+  display: none;
+}
+
+[data-testid="stMainBlockContainer"] {
+  padding-top: 0;
+}
+
+/* Three equal columns across the full width, stays visible on scroll */
+.st-key-navbar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  margin-bottom: 3rem;
+  background: var(--app-bg);
+  border-bottom: 1px solid var(--app-border);
+}
+
+[class*="st-key-nav-link"] a {
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem 0;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent !important;
+  transition: border-color 0.15s ease;
+}
+
+[class*="st-key-nav-link"] a p {
+  font-size: 0.9375rem;
+  color: var(--app-text-muted);
+  transition: color 0.15s ease;
+}
+
+[class*="st-key-nav-link"] a:hover p {
+  color: var(--app-text);
+}
+
+.st-key-nav-link-active a {
+  border-bottom-color: var(--app-accent);
+}
+
+.st-key-nav-link-active a p {
+  color: var(--app-text);
+}

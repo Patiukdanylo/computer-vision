@@ -21,3 +21,7 @@ runs/
 
 # Upload zip
 *.zip
+
+# ignore mds
+*.md
+!README.MD

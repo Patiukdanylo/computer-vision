@@ -2,8 +2,8 @@
 
 # YOLO training and inference; brings torch, OpenCV (cv2.findHomography), numpy, pandas, matplotlib
 ultralytics>=8.4,<9
-# Dashboard
-streamlit>=1.40
+# Dashboard; pinned because custom styling can break on upgrades
+streamlit==1.66.1
 # Cutting clips from YouTube (also needs ffmpeg: brew install ffmpeg)
 yt-dlp
 # Downloading the labelled dataset export
