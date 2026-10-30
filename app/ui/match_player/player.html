@@ -1,0 +1,74 @@
+<div class="summary">
+  <div class="stat"><span class="stat-label">Ball location</span><span class="stat-value" data-stat="ball-side"></span></div>
+  <div class="stat"><span class="stat-label">Nearest to ball</span><span class="stat-value" data-stat="nearest"></span></div>
+  <div class="stat">
+    <span class="stat-label">Time nearest to ball, so far</span>
+    <span class="stat-value" data-stat="share"></span>
+    <div class="share-bar"><div class="share-a"></div></div>
+  </div>
+  <div class="stat"><span class="stat-label">Teammate spacing</span><span class="stat-value" data-stat="spacing"></span></div>
+</div>
+<div class="player">
+  <div class="left">
+    <video class="clip" controls muted playsinline></video>
+    <div class="readout">
+      <div class="readout-head">
+        <span>Tracked</span>
+        <span>X (m)</span>
+        <span>Y (m)</span>
+        <span>Speed (km/h)</span>
+        <span>Distance (m)</span>
+        <span>To ball (m)</span>
+      </div>
+      <div class="readout-rows"></div>
+    </div>
+  </div>
+  <div class="map">
+    <!-- Court in metres: x 0-14, y 0-11. The outer size and goal width are official; the inner markings are approximate. -->
+    <svg viewBox="-1.1 -1 16.2 13" role="img" aria-label="Top-down court with moving positions">
+      <defs>
+        <pattern id="metre-grid" width="1" height="1" patternUnits="userSpaceOnUse">
+          <path d="M 1 0 L 0 0 0 1" class="grid-line" />
+        </pattern>
+      </defs>
+
+      <rect class="floor" x="0" y="0" width="14" height="11" />
+      <rect class="grid" x="0" y="0" width="14" height="11" fill="url(#metre-grid)" />
+
+      <g class="court">
+        <rect x="0" y="0" width="14" height="11" />
+        <line x1="7" y1="0" x2="7" y2="11" />
+        <circle cx="7" cy="5.5" r="3.5" />
+        <circle cx="7" cy="5.5" r="1.5" />
+        <path d="M 0 3 A 2.5 2.5 0 0 1 0 8" />
+        <path d="M 14 3 A 2.5 2.5 0 0 0 14 8" />
+      </g>
+      <circle class="center-spot" cx="7" cy="5.5" r="0.08" />
+
+      <rect class="goal" x="-0.4" y="4.5" width="0.4" height="2" />
+      <rect class="goal" x="14" y="4.5" width="0.4" height="2" />
+
+      <g class="labels">
+        <text x="7" y="-0.35" text-anchor="middle">14 m</text>
+        <text x="-0.6" y="1.2" text-anchor="middle" transform="rotate(-90 -0.6 1.2)">11 m</text>
+        <text x="0" y="11.55" text-anchor="start">0</text>
+        <text x="7" y="11.55" text-anchor="middle">7</text>
+        <text x="14" y="11.55" text-anchor="end">14</text>
+        <text x="0.2" y="4.2">Goal</text>
+        <text x="13.8" y="4.2" text-anchor="end">Goal</text>
+      </g>
+
+      <g class="spacing"></g>
+      <g class="trails"></g>
+      <line class="ball-link" />
+      <g class="dots"></g>
+    </svg>
+    <div class="legend">
+      <span class="team-a">Team A</span>
+      <span class="team-b">Team B</span>
+      <span class="ball">Ball</span>
+      <span class="trail-key">Last 1.5 s</span>
+      <span class="link-key">Nearest to ball</span>
+    </div>
+  </div>
+</div>

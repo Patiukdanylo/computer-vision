@@ -1,0 +1,22 @@
+[theme]
+base = "dark"
+primaryColor = "#F5B83D"
+backgroundColor = "#0E1116"
+secondaryBackgroundColor = "#171B22"
+textColor = "#E8EAED"
+borderColor = "#2A303A"
+baseRadius = "0.5rem"
+font = "'Nata Sans':https://fonts.googleapis.com/css2?family=Nata+Sans:wght@100..900&display=swap"
+headingFontWeights = 500
+headingFontSizes = ["2rem", "1.5rem", "1.25rem", "1rem", "0.875rem", "0.75rem"]
+chartCategoricalColors = ["#4DA3FF", "#F2F2F2", "#FF4D4D", "#F5B83D"]
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+address = "localhost"
+enableStaticServing = true

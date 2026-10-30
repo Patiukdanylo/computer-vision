@@ -22,6 +22,13 @@ runs/
 # Upload zip (and every other zip, e.g. data/frames.zip)
 *.zip
 
+# Personal working notes
+/notes.md
+
+# Clips and results written by the app
+outputs/
+app/static/
+
 # Local data, see "Data" in README.md: the frames and everything built from them.
 # In data/labelled/ only the .ndjson exports are committed, not the Platform converter's output.
 data/frames/
