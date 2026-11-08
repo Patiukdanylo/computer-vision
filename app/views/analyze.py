@@ -1,0 +1,77 @@
+"""Upload a clip, process it, and show the video beside the 2D court."""
+import streamlit as st
+
+from core.config import DETECTION_CLASSES, SAMPLE_CLIP
+from core.demo_data import HZ, make_demo_tracks
+from core.video_io import get_duration, publish_clip, save_upload
+from ui import state
+from ui.match_player import render_match_player
+
+
+def on_upload():
+    uploaded = st.session_state["uploader"]
+    if uploaded:
+        state.set_clip(save_upload(uploaded.getvalue()), uploaded.name)
+
+
+def upload_screen():
+    with st.container(key="dropzone"):
+        st.file_uploader("Upload a clip", type="mp4", key="uploader", on_change=on_upload, label_visibility="collapsed")
+    with st.container(horizontal_alignment="center"):
+        if st.button("Or try the sample clip", type="tertiary", disabled=not SAMPLE_CLIP.exists()):
+            state.set_clip(SAMPLE_CLIP, SAMPLE_CLIP.name)
+            st.rerun()
+
+
+def confidence_sliders() -> dict[str, float]:
+    saved = state.get_confidences()
+    st.markdown("Confidence thresholds")
+    columns = st.columns(len(DETECTION_CLASSES))
+    chosen = {
+        name: column.slider(name.capitalize(), 0.05, 0.95, saved[name], 0.05, key=f"confidence_{name}")
+        for name, column in zip(DETECTION_CLASSES, columns)
+    }
+    state.set_confidences(chosen)
+    st.caption("A detection below its class threshold is dropped: lower finds more, but adds false detections. "
+               ":orange[No effect yet, because the backend doesn't exist.]")
+    return chosen
+
+
+def clip_screen(path, name):
+    st.video(path)
+    st.caption(f"{name} · {path.stat().st_size / 1e6:.1f} MB")
+    confidences = confidence_sliders()
+    with st.container(horizontal=True):
+        process = st.button("Process clip", type="primary", help="Shows demo data until the backend exists")
+        st.button("Choose another clip", on_click=state.clear_clip)
+    if process:
+        try:
+            tracks = make_demo_tracks(get_duration(path))
+        except ValueError:
+            st.error("This file could not be read as a video.")
+        else:
+            state.set_run({"clip_name": publish_clip(path), "tracks": tracks, "hz": HZ, "confidences": confidences})
+            st.rerun()
+
+
+def results_screen(run):
+    st.caption(":orange[Demo data: the map dots are fake, and the video has no detections yet.]")
+    render_match_player(f"/app/static/{run['clip_name']}", run["tracks"], run["hz"])
+    thresholds = " · ".join(f"{name.capitalize()} {value:.2f}" for name, value in run["confidences"].items())
+    st.caption(f"Confidence thresholds: {thresholds}")
+    st.button("Process another clip", on_click=state.clear_clip)
+
+
+run = state.get_run()
+clip = state.get_clip()
+
+st.title("Cycle Ball Tactical Map")
+if not run:
+    st.caption("From a static-camera clip to a synchronized 2D court.")
+
+if run:
+    results_screen(run)
+elif clip:
+    clip_screen(*clip)
+else:
+    upload_screen()

@@ -99,6 +99,17 @@ pip install -r requirements.txt
 
 Training runs in Google Colab with a GPU runtime; save `best.pt` to Drive after every run.
 
+## Run the app
+
+Start it from the repo folder, so it finds `.streamlit/config.toml`:
+
+```bash
+source .venv/bin/activate
+streamlit run app/main.py
+```
+
+It opens at http://localhost:8501. For now it shows demo data: the map positions and analytics are fake until the backend is connected.
+
 ## Workflow
 
 - One branch per task (`feat/…`, `fix/…`, `docs/…`), a pull request into `main`, and one teammate reviews before merging.
@@ -111,6 +122,6 @@ One zip per team: the PDF report, the notebooks, the code and weights to run the
 
 ```bash
 zip -r cv-challenge-upload.zip docs/report.pdf docs/slides.pptx notebooks app models configs \
-  data/prepare_dataset.py data/labelling-rules.md requirements.txt README.md \
+  data/prepare_dataset.py data/labelling-rules.md data/cycle-ball.mp4 .streamlit requirements.txt README.md \
   -x "*.ipynb_checkpoints*" "*/__pycache__/*"
 ```
