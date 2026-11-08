@@ -2,9 +2,9 @@
 
 **Owner:** Artem Kucheruk — Modeling lead
 **Rubric weight:** Modeling & Fine-Tuning Core — **35%**
-**Status (29 Oct):** E0 baseline and E1 first fine-tune done on dataset v1, in [`01_baseline_finetune.ipynb`](01_baseline_finetune.ipynb). Results are in the [experiment log](#9-experiment-log-map-log), the dated history is in [PROGRESS.md](PROGRESS.md). Next: E2 (image size 1280) on Colab, and a re-run on dataset v2 once data cleaning is done.
+**Status (29 Oct):** E0 baseline and E1 first fine-tune done on dataset v1, in [`notebooks/02_baseline_finetune.ipynb`](../notebooks/02_baseline_finetune.ipynb). Results are in the [experiment log](#9-experiment-log-map-log), the dated history is in [PROGRESS.md](PROGRESS.md). Next: E2 (image size 1280) on Colab, and a re-run on dataset v2 once data cleaning is done.
 
-> Sport: **cycle ball** (2 vs 2 on bicycles, indoor court 14 × 11 m, goals 2 × 2 m; ball played with the bike and the head, except when defending the goal). Static camera. Framework: **Ultralytics YOLO11**.
+> Sport: **cycle ball** (2 vs 2 on bicycles, indoor court 14 × 11 m, goals 2 × 2 m; ball played with the bike and the head, except when defending the goal). Static camera. Framework: **Ultralytics YOLO11** (E0, E1), moving to **YOLO26** (differences in §8).
 >
 > ⚠️ Cycle ball is **not** in the brief's list of allowed sports (soccer, basketball, tennis, ice/field hockey). It fits the stated condition ("action is predominantly planar"), but get the instructor's OK in writing.
 
@@ -56,7 +56,7 @@ C sends back failure hypotheses → they become the next experiments (column *Tr
 
 ### Outputs to D (Pipeline)
 
-- `best.pt` of the chosen model, class names. Current model: `runs/modeling/E1_640_v1/weights/best.pt`, `imgsz=640`, about 8 ms per frame on an M4 Mac (`mps`).
+- `best.pt` of the chosen model, class names. Current model: `runs/modeling/E1_yolo11s_640_v1/weights/best.pt`, `imgsz=640`, about 8 ms per frame on an M4 Mac (`mps`).
 - Recommended `imgsz`, `iou`, and **per-class `conf`**.
 - **`detections.csv`**, one row per box. Format agreed with D on 29 Oct:
 
@@ -104,7 +104,7 @@ Purpose: the **"before"** of the incremental delta. Same val split as every late
 
 1. Model: COCO-pretrained `yolo11s.pt` — same size as the fine-tune reference, so the delta measures the data, not the model size.
 2. Mapping to COCO ids: player → `person` (0), bike → `bicycle` (1), ball → `sports ball` (32). `goal` has no COCO class and is dropped from the baseline.
-3. `yolo val` matches by class id, so the notebook makes a remapped copy of val (`runs/modeling/E0_data_v1/`) with a yaml holding COCO's 80 names. Implementation: [`01_baseline_finetune.ipynb`](01_baseline_finetune.ipynb) §2. AP is computed only for classes present in the ground truth, so the other 77 COCO classes don't affect the score.
+3. `yolo val` matches by class id, so the notebook makes a remapped copy of val (`runs/modeling/E0_data_v1/`) with a yaml holding COCO's 80 names. Implementation: [`notebooks/02_baseline_finetune.ipynb`](../notebooks/02_baseline_finetune.ipynb) §2. AP is computed only for classes present in the ground truth, so the other 77 COCO classes don't affect the score.
 
 **Result (v1):** see the log in §9. `person` was the *worst* class (AP50 0.18): COCO boxes the officials' table, spectators and the referee. `sports ball` gets AP50 0.73 even though recall is 0: it finds 11/13 balls but only with confidence 0.002–0.06, and AP depends only on ranking. In practice the baseline is useless for the ball.
 
@@ -121,11 +121,11 @@ Purpose: the **"before"** of the incremental delta. Same val split as every late
 - Same dataset version and val split across compared rows. If A releases a new version, re-run E0 and the champion on it.
 - **Val is tiny → mAP is noisy.** With ~15 val balls, one ball ≈ 6–7 AP points. Differences under ~3 points are not evidence. Re-run the top two configs with 3 seeds and report mean ± std.
 - **Selection metric:** mean **AP@50:95 over ball, player and bike**. *(Changed 29 Oct: the plan was ball AP@50, but E1 already reaches 0.995 on it, so it can no longer tell configs apart. `goal` is excluded because it is near-perfect.)* Always report ball AP@50:95, AP@50 and the all-class mAP too.
-- **Run names carry the dataset version** (`E1_640_v1`). The notebook skips training when `best.pt` already exists, so a new dataset version needs a new name.
+- **Run names carry the model and the dataset version** (`E1_yolo11s_640_v1`). The notebook skips training when `best.pt` already exists, so a new model or dataset version needs a new name.
 
 ### Reference fine-tune (E1, pure defaults)
 
-In [`01_baseline_finetune.ipynb`](01_baseline_finetune.ipynb) §3. Defaults: `imgsz=640`, `epochs=100`, `patience=100`, `batch=16`, `freeze=None`, default augmentation, `optimizer=auto`. Device: `device=mps` on Mac, `device=0` on Colab/Kaggle GPU. Record the device and Ultralytics version in the log.
+In [`notebooks/02_baseline_finetune.ipynb`](../notebooks/02_baseline_finetune.ipynb) §3. Defaults: `imgsz=640`, `epochs=100`, `patience=100`, `batch=16`, `freeze=None`, default augmentation, `optimizer=auto`. Device: `device=mps` on Mac, `device=0` on Colab/Kaggle GPU. Record the device and Ultralytics version in the log.
 
 **Hardware limit:** the Mac (M4, 16 GB) handles 640 (100 epochs ≈ 24 min). At `imgsz=1280` it ran out of memory and swapped (~12 min per batch, i.e. days per run), so E2 and every later 1280 run go on Colab.
 
@@ -144,7 +144,7 @@ In [`01_baseline_finetune.ipynb`](01_baseline_finetune.ipynb) §3. Defaults: `im
 
 Order E2 → E6 because image size has the largest expected effect on the ball and interacts with mosaic (E4).
 
-**Freeze indices (YOLO11):** layers 0–10 are the backbone (ends with SPPF at 9, C2PSA at 10), 11–22 the neck, 23 the Detect head. `freeze=N` freezes `model.0` … `model.N-1`. Check `ultralytics/cfg/models/11/yolo11.yaml` if using another version.
+**Freeze indices (YOLO11 and YOLO26, same layout):** layers 0–10 are the backbone (ends with SPPF at 9, C2PSA at 10), 11–22 the neck, 23 the Detect head. `freeze=N` freezes `model.0` … `model.N-1`. Check `ultralytics/cfg/models/11/yolo11.yaml` or `26/yolo26.yaml` if using another version.
 
 ---
 
@@ -169,7 +169,7 @@ Static camera, flat indoor court, small fast ball that is often pressed against 
 
 ## 7. Reading the curves (loss dynamics)
 
-`results.csv` columns: `train/{box,cls,dfl}_loss`, `val/{box,cls,dfl}_loss`, `metrics/precision(B)`, `metrics/recall(B)`, `metrics/mAP50(B)`, `metrics/mAP50-95(B)`, `lr/pg0..2`.
+`results.csv` columns: `train/{box,cls,dfl}_loss`, `val/{box,cls,dfl}_loss`, `metrics/precision(B)`, `metrics/recall(B)`, `metrics/mAP50(B)`, `metrics/mAP50-95(B)`, `lr/pg0..2`. YOLO26 logs `l1_loss` instead of `dfl_loss` (§8.2).
 
 | Pattern | Meaning | Action |
 |---|---|---|
@@ -190,6 +190,7 @@ Static camera, flat indoor court, small fast ball that is often pressed against 
 - **Neck:** PAN-FPN. Top-down then bottom-up fusion, so the fine P3 map (small objects) gets semantic information from deep layers.
 - **Head:** **anchor-free, decoupled**. Separate branches for class scores and box. Each grid point predicts the distances to the four box sides, each as a discrete distribution (`reg_max=16` bins).
 - **Output:** at 640 input, 80×80 + 40×40 + 20×20 = **8400 candidates**, then NMS.
+- **YOLO26** (same backbone and neck, `cfg/models/26/yolo26.yaml`): `reg_max=1`, so each side is one regressed distance instead of a 16-bin distribution (no DFL). `end2end=True`: the head has a second, **one-to-one** branch trained to give one box per object, which keeps the top `max_det=300` scores and **skips NMS**. In Ultralytics 8.4.192 that branch runs only with `nms=False` (val, predict, export). The default `nms=None` uses the one-to-many branch plus NMS, like YOLO11, and so does the validation that picks `best.pt` during training.
 - **Why the ball is hard:** at stride 8 one P3 cell covers 8×8 px. A 4 px ball is half a cell. After three stride-2 downsamplings its features are mostly mixed with the floor and the wheel it's touching.
 
 ### 8.2 Loss
@@ -200,13 +201,15 @@ Static camera, flat indoor court, small fast ball that is often pressed against 
 | `dfl_loss` | **Distribution Focal Loss** — sharpens the per-side distance distributions → better localization | 1.5 |
 | `cls_loss` | **BCE** per class (sigmoid, not softmax) | 0.5 |
 
+**YOLO26:** `l1_loss` replaces `dfl_loss`: an L1 loss on the four side distances (scaled by image size), same 1.5 weight. Both head branches are trained: loss = `o2m` × one-to-many loss (TAL top-10) + `o2o` × one-to-one loss (TAL top-7, then 1 per box). `o2m` decays linearly from 0.8 to 0.1 over the epochs, so training shifts to the NMS-free branch. The logged losses are the one-to-one branch's (`E2ELoss` in `utils/loss.py`).
+
 **Assignment — Task-Aligned Assigner (TAL):** for each ground-truth box, candidate anchor points must lie **inside the box**; among them the top-k (k=10) by `score^0.5 · IoU^6` become positives.
-→ Consequence for the ball: anchor points sit every 8 px on P3. **A ball smaller than the stride may contain no anchor point and gets no positive sample at all** — the model never gets trained on it. A 4×4 px ball contains a P3 anchor point only about (4/8)² ≈ 25% of the time. At `imgsz=1280` the same ball is ~8 px and always contains one. This is the mechanism behind the E2 hypothesis.
+→ Consequence for the ball: anchor points sit every 8 px on P3, so a 4×4 px ball would contain one only about (4/8)² ≈ 25% of the time and often get **no positive sample at all**. Ultralytics 8.4.192 guards against this for YOLO11 and YOLO26 alike: for the candidate check only, any box side under 16 px (the P4 stride) is widened to 16 px around its centre (`utils/tal.py`). So the tiny ball does get trained on, which fits E1's ball AP50 of 0.995 at 640. What stays hard at 640 is the features (§8.1) and box precision (AP50-95, §8.4), which is what E2 now targets.
 
 ### 8.3 Training mechanics
 
 - **Transfer learning:** backbone and neck start from COCO; the Detect head's class output is re-initialized for our `nc`.
-- **`optimizer=auto`:** for short runs (<10k iterations) Ultralytics picks **AdamW** with an auto LR `≈ 0.002·5/(4+nc)` (≈0.0013 for 4 classes) and **ignores `lr0`**. To experiment with LR, set `optimizer=SGD` or `AdamW` explicitly.
+- **`optimizer=auto`:** for short runs (<10k iterations) Ultralytics picks **AdamW** with an auto LR `≈ 0.002·5/(4+nc)` (≈0.0013 for 4 classes) and **ignores `lr0`**. To experiment with LR, set `optimizer=SGD` or `AdamW` explicitly. Same rule for YOLO26; above 10k iterations it picks **MuSGD** (SGD + Muon), which our runs never reach.
 - **Gradient accumulation:** nominal batch `nbs=64`. With `batch=16`, gradients accumulate over 4 batches. ~50 train images = 4 batches/epoch → **about 1 optimizer step per epoch**. 100 epochs ≈ 100 steps — reason to test longer runs (E5).
 - **Warmup:** `max(3 epochs, 100 iterations)`. With 4 batches/epoch that is **~25 epochs** of warmup, which explains slow early progress on small data.
 - **LR schedule:** linear decay to `lrf=0.01 × lr`.
@@ -265,9 +268,10 @@ for i, c in enumerate(r.box.ap_class_index):
 - [x] Environment: `.venv`, Ultralytics 8.4.192, torch 2.15, `mps`.
 - [x] E0 baseline @640 and @1280 → log.
 - [x] E1 defaults → log.
-- [ ] Hand the run folders (`runs/modeling/E0_*_v1`, `E1_640_v1`) to C. Feedback for A: wrong `player` box in `frame_00749`; 11 train frames with fewer than 4 bikes labelled.
+- [ ] Hand the run folders (`runs/modeling/E0_yolo11s_*_v1`, `E1_yolo11s_640_v1`) to C. Feedback for A: wrong `player` box in `frame_00749`; 11 train frames with fewer than 4 bikes labelled.
 - [ ] D: generate `detections.csv` and the annotated video (format agreed in §2).
 - [ ] Dataset v2 (after cleaning) → re-run E0 and E1 with `VERSION = "v2"`.
+- [ ] Switch to YOLO26: `MODEL = "yolo26s.pt"` in the notebook, re-run E0 and E1, log them as new rows next to the YOLO11 ones.
 - [ ] Ask A for a held-out test clip; v1 has none.
 - [ ] E2 @1280 on Colab, then E3–E6, each row with a hypothesis; feed in C's hypotheses.
 - [ ] Final config × 3 seeds; evaluate the held-out test set once.
@@ -295,4 +299,5 @@ Dataset, `runs/` and `*.pt` weights are not committed (size).
 | Date | Tool | Used for | My review |
 |---|---|---|---|
 | 2026-10-27 | Claude (Claude Code) | First draft of this modeling plan from the brief | |
-| 2026-10-29 | Claude (Claude Code) | Dataset v1 check; notebook `01_baseline_finetune.ipynb` (code, explanations, conclusions); running E0/E1; checking the video's fps and frame numbering; the CSV format for D; updating this plan and PROGRESS.md | |
+| 2026-10-29 | Claude (Claude Code) | Dataset v1 check; notebook `notebooks/02_baseline_finetune.ipynb` (code, explanations, conclusions); running E0/E1; checking the video's fps and frame numbering; the CSV format for D; updating this plan and PROGRESS.md | |
+| 2026-10-30 | Claude (Claude Code) | Moving the notebook to `notebooks/`; preparing the switch to YOLO26 (model in run names, YOLO26 notes in §5, §7, §8, checked against Ultralytics 8.4.192 source) | |
