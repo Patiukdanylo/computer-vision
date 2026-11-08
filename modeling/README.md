@@ -2,7 +2,7 @@
 
 **Owner:** Artem Kucheruk — Modeling lead
 **Rubric weight:** Modeling & Fine-Tuning Core — **35%**
-**Status (8 Nov):** E0 baseline and E1 first fine-tune done with YOLO26s on dataset version `v1b` (the time-based split from the EDA), in [`notebooks/02_baseline_finetune.ipynb`](../notebooks/02_baseline_finetune.ipynb). Results are in the [experiment log](#9-experiment-log-map-log), the dated history is in [PROGRESS.md](PROGRESS.md). Next: more moving-ball frames (dataset v2), and E2 (image size 1280) on Colab.
+**Status (8 Nov):** E0 baseline and E1 first fine-tune done with YOLO26s on dataset version `v1b` (the time-based split from the EDA), in [`notebooks/02_baseline_finetune.ipynb`](../notebooks/02_baseline_finetune.ipynb). Results are in the [experiment log](#9-experiment-log-map-log). Next: more moving-ball frames (dataset v2), and E2 (image size 1280) on Colab.
 
 > Sport: **cycle ball** (2 vs 2 on bicycles, indoor court 14 × 11 m, goals 2 × 2 m; ball played with the bike and the head, except when defending the goal). Static camera. Framework: **Ultralytics YOLO26** (differences from YOLO11 in §8). The first E0/E1 runs used YOLO11.
 >
@@ -56,9 +56,9 @@ C sends back failure hypotheses → they become the next experiments (column *Tr
 
 ### Outputs to D (Pipeline)
 
-- `best.pt` of the chosen model, class names. Current model: `runs/modeling/E1_yolo26s_640_v1b/weights/best.pt`, `imgsz=640`, about 7–11 ms per frame on an M4 Mac (`mps`).
+- `best.pt` of the chosen model, class names. Current model: `models/best.pt` (copy of `runs/modeling/E1_yolo26s_640_v1b/weights/best.pt`), `imgsz=640`, about 7–11 ms per frame on an M4 Mac (`mps`).
 - Recommended `imgsz`, `iou`, and **per-class `conf`**.
-- **`detections.csv`**, one row per box. Format agreed with D on 29 Oct:
+- **`detections.csv`** (`models/detections.csv`, written by notebook §7), one row per box. Format agreed with D on 29 Oct:
 
   ```
   frame,class,confidence,x1,y1,x2,y2
@@ -281,7 +281,8 @@ for i, c in enumerate(r.box.ap_class_index):
 - [x] E0 baseline @640 and @1280 → log.
 - [x] E1 defaults → log.
 - [ ] Hand the run folders (`runs/modeling/E0_yolo26s_*_v1b`, `E1_yolo26s_640_v1b`) to C. Feedback for A: re-check the ball box in `frame_00074` (it sits on a shoe).
-- [ ] D: generate `detections.csv` and the annotated video (format agreed in §2).
+- [x] D: `models/best.pt` and `models/detections.csv` from E1-26v1b (notebook §7).
+- [ ] D: annotated video (format agreed in §2).
 - [ ] Dataset v2: label more frames with a moving, blurred or partly hidden ball (after frame 234, so val stays clean) → re-run E0 and E1 with `VERSION = "v2"`.
 - [x] Switch to YOLO26: `MODEL = "yolo26s.pt"` in the notebook, E0 and E1 re-run on the old split and on the EDA split (`v1b`), logged as new rows next to the YOLO11 ones. YOLO11 was not re-run on `v1b`.
 - [ ] Ask A for a held-out test clip; v1 has none.
@@ -313,4 +314,4 @@ Dataset, `runs/` and `*.pt` weights are not committed (size).
 | 2026-10-27 | Claude (Claude Code) | First draft of this modeling plan from the brief | |
 | 2026-10-29 | Claude (Claude Code) | Dataset v1 check; notebook `notebooks/02_baseline_finetune.ipynb` (code, explanations, conclusions); running E0/E1; checking the video's fps and frame numbering; the CSV format for D; updating this plan and PROGRESS.md | |
 | 2026-10-30 | Claude (Claude Code) | Moving the notebook to `notebooks/`; preparing the switch to YOLO26 (model in run names, YOLO26 notes in §5, §7, §8, checked against Ultralytics 8.4.192 source) | |
-| 2026-11-08 | Claude (Claude Code) | Checking the `v1b` runs (dataset split, training args, frame alignment, per-ball hits and misses); updating the experiment log, these notes and the notebook text | |
+| 2026-11-08 | Claude (Claude Code) | Checking the `v1b` runs (dataset split, training args, frame alignment, per-ball hits and misses); updating the experiment log, these notes and the notebook text; resolving the `.gitignore` merge conflict with `main`; the `detections.csv` cell (notebook §7) and `save_json`; new numbers on the app's How it works page | |
