@@ -11,14 +11,13 @@ PIPELINE_STEPS = [
     ("2D map", "The video's own time decides which positions to show.", "Demo data"),
 ]
 
-# Baseline E0a and fine-tune E1 from modeling/README.md (branch feat/base-model), both at 640 px.
-# Measured on an older split: update these once they are re-run on the split in configs/dataset.yaml.
-MODEL_RESULTS = [("Player", 0.176, 0.935), ("Ball", 0.727, 0.995), ("Bike", 0.673, 0.818)]
+# Baseline E0a-26v1b and fine-tune E1-26v1b from modeling/README.md, both at 640 px, on the split in configs/dataset.yaml.
+MODEL_RESULTS = [("Player", 0.333, 0.934), ("Ball", 0.147, 0.521), ("Bike", 0.853, 0.910)]
 
 LIMITS = [
     ("Flat floor only", "An airborne ball lands in the wrong map spot, because it isn't on the floor."),
     ("One camera view", "A clip from another angle needs new court points."),
-    ("Bikes get missed", "Bike recall is 0.67, so the rider's box is the fallback, and it ends at the pedals."),
+    ("Bikes get missed", "Bike recall is 0.79, so the rider's box is the fallback, and it ends at the pedals."),
     ("Nearest isn't possession", "Being closest to the ball doesn't mean having it."),
 ]
 
@@ -41,12 +40,11 @@ st.caption("The split is by time, not random: neighbouring frames are near-dupli
            "would put the same moment in both sets and inflate the score.")
 
 st.subheader("The model")
-st.markdown("AP50 on validation, after fine-tuning YOLO11s, compared with the same model before it.")
+st.markdown("AP50 on validation, after fine-tuning YOLO26s, compared with the same model before it.")
 for column, (name, before, after) in zip(st.columns(3), MODEL_RESULTS):
     column.metric(name, f"{after:.3f}", f"{after - before:+.3f} vs pretrained")
-st.caption(":orange[Early results from an older split with 13 validation balls, not the 48 / 25 split above "
-           "(25 balls). They need re-running on the current split.] The pretrained ball score flatters it: "
-           "it found balls only at confidence 0.06 or lower, which is useless at a normal threshold.")
+st.caption("One training run on the 25 validation frames above, so one ball is worth about 4 points. "
+           "The ball is the hardest class: a blurred or partly hidden ball is often missed.")
 
 st.subheader("Homography: from camera view to top-down")
 st.markdown("The camera sees the court at an angle, so its rectangle looks like a trapezoid. If we know where at "

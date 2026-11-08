@@ -36,3 +36,7 @@ data/labelled/*
 !data/labelled/*.ndjson
 data/cycle-ball-dataset/
 reports/eda/
+# Local only (modeling)
+PROGRESS.md
+expl/
+docs/CV_Challenge_2026_2027.pdf
