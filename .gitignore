@@ -36,6 +36,8 @@ data/labelled/*
 !data/labelled/*.ndjson
 data/cycle-ball-dataset/
 reports/eda/
+reports/error_analysis/
+reports/team_clustering/
 # Local only (modeling)
 PROGRESS.md
 expl/
