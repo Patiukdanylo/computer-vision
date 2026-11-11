@@ -3,6 +3,12 @@ const RADIUS = { "team-a": 0.38, "team-b": 0.38, ball: 0.17 }; // metres
 const TRAIL_SECONDS = 1.5;
 const MS_TO_KMH = 3.6;
 const HALFWAY_X = 7;
+const BOX_STYLE = [ // by box code from the backend: 0 team A, 1 team B, 2 ball, 3 player of unknown team
+  { color: "#4DA3FF", label: "Team A" },
+  { color: "#F2F2F2", label: "Team B" },
+  { color: "#FF4D4D", label: "Ball" },
+  { color: "#9AA0A6", label: "Player" },
+];
 
 function svgElement(tag, className) {
   const element = document.createElementNS(SVG_NS, tag);
@@ -15,11 +21,10 @@ function buildDot(track) {
   const circle = svgElement("circle");
   circle.setAttribute("r", RADIUS[track.kind]);
   dot.append(circle);
-  if (track.kind !== "ball") {
-    const label = svgElement("text");
-    label.textContent = track.name;
-    dot.append(label);
-  }
+  const label = svgElement("text");
+  label.textContent = track.name;
+  if (track.kind === "ball") label.setAttribute("y", -0.42); // the ball is too small to hold its label, so it sits above
+  dot.append(label);
   return dot;
 }
 
@@ -74,7 +79,9 @@ function cumulativeTeamANearest(riders, ball) {
 // Streamlit calls this again on every rerun, so it must not restart the video
 export default function ({ data, parentElement }) {
   const video = parentElement.querySelector("video");
-  const { tracks, hz } = data;
+  const { tracks, hz, boxes } = data;
+  const canvas = parentElement.querySelector(".boxes");
+  const context = canvas.getContext("2d");
   const riders = tracks.filter((track) => track.kind !== "ball");
   const ball = tracks.find((track) => track.kind === "ball");
   const teams = ["team-a", "team-b"].map((kind) => ({
@@ -104,6 +111,33 @@ export default function ({ data, parentElement }) {
   const shareStat = stat("share");
   const spacingStat = stat("spacing");
   const shareBar = parentElement.querySelector(".share-a");
+
+  // Draw this frame's detection boxes over the video, scaled from video pixels to the size it is shown at
+  function drawBoxes(index) {
+    const width = video.clientWidth;
+    const height = video.clientHeight;
+    if (!video.videoWidth || !width) return;
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const scale = width / video.videoWidth;
+    context.font = "12px sans-serif";
+    context.textBaseline = "bottom";
+    for (const [code, x1, y1, x2, y2] of boxes[Math.min(index, boxes.length - 1)] || []) {
+      const { color, label } = BOX_STYLE[code];
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.strokeRect(x1 * scale, y1 * scale, (x2 - x1) * scale, (y2 - y1) * scale);
+      const textWidth = context.measureText(label).width + 6;
+      context.fillStyle = color;
+      context.fillRect(x1 * scale, y1 * scale - 16, textWidth, 16);
+      context.fillStyle = "#0E1116";
+      context.fillText(label, x1 * scale + 3, y1 * scale - 2);
+    }
+  }
 
   // The video's own time is the only clock, so the map and stats can't drift, even after seeking or pausing
   function draw() {
@@ -169,6 +203,8 @@ export default function ({ data, parentElement }) {
     shareStat.textContent = `A ${shareA.toFixed(0)}% · B ${(100 - shareA).toFixed(0)}%`;
     shareBar.style.width = `${shareA}%`;
     spacingStat.textContent = `A ${spacings[0].toFixed(1)} m · B ${spacings[1].toFixed(1)} m`;
+
+    drawBoxes(index);
 
     frame = requestAnimationFrame(draw);
   }
