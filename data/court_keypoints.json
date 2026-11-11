@@ -1,0 +1,30 @@
+{
+  "far_left_corner": [
+    703.9,
+    704.9
+  ],
+  "far_right_corner": [
+    2341.1,
+    720.9
+  ],
+  "centre_spot": [
+    1486.0,
+    825.3
+  ],
+  "left_end_low": [
+    136.4,
+    943.0
+  ],
+  "right_end_low": [
+    2799.8,
+    966.2
+  ],
+  "near_sideline_left": [
+    694.6,
+    972.9
+  ],
+  "near_sideline_right": [
+    1849.2,
+    991.3
+  ]
+}

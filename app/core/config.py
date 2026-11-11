@@ -10,6 +10,7 @@ STATIC_DIR = ROOT / "app" / "static"
 COURT_LENGTH = 14.0
 COURT_WIDTH = 11.0
 
-# Classes in our labelled dataset, and the starting point for each confidence slider (Ultralytics' default)
+# Classes in our labelled dataset, and the starting point for each confidence slider
 DETECTION_CLASSES = ("player", "ball", "bike", "goal")
-DEFAULT_CONFIDENCE = 0.25
+# Bike and player at 0.5: below that the model adds duplicate boxes (error analysis). Ball low, it scores low even when right.
+DEFAULT_CONFIDENCES = {"player": 0.5, "ball": 0.25, "bike": 0.5, "goal": 0.25}

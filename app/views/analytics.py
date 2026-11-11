@@ -14,7 +14,8 @@ def empty_screen():
 
 
 def analytics_screen(tracks, hz):
-    st.caption(":orange[Demo data: every number on this page comes from fake positions.]")
+    st.caption("Numbers come from detected positions mapped to metres. Identities are matched frame to frame, "
+               "so a swap between two riders of one team is possible.")
     stats = [track_stats(track, hz) for track in tracks]
     by_kind = lambda kind: [track for track in tracks if track["kind"] == kind]
     team_distance = lambda kind: sum(row["distance_m"] for row in stats if row["kind"] == kind)

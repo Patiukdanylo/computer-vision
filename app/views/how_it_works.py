@@ -1,14 +1,14 @@
-"""The pipeline explained, from raw video to minimap. Numbers here are measured by the team, not demo data."""
+"""The pipeline explained, from raw video to minimap. Numbers here are measured by the team."""
 import streamlit as st
 
 from ui.homography_diagram import render_homography_diagram
 
 PIPELINE_STEPS = [
     ("Video", "One static camera. Every frame is kept, so video and map stay in sync.", "Working"),
-    ("Detection", "Fine-tuned YOLO finds players, bikes, the ball and goals.", "Not connected"),
-    ("Floor point", "The bottom-centre of the bike box, where the wheels touch the floor.", "Not connected"),
-    ("Homography", "A 3x3 matrix turns that floor pixel into court metres.", "Not connected"),
-    ("2D map", "The video's own time decides which positions to show.", "Demo data"),
+    ("Detection", "Fine-tuned YOLO finds players, bikes, the ball and goals.", "Working"),
+    ("Floor point", "The bottom-centre of the bike box, where the wheels touch the floor.", "Working"),
+    ("Homography", "A 3x3 matrix turns that floor pixel into court metres.", "Working"),
+    ("2D map", "The video's own time decides which positions to show.", "Working"),
 ]
 
 # Baseline E0a-26v1b and fine-tune E1-26v1b from modeling/README.md, both at 640 px, on the split in configs/dataset.yaml.
@@ -22,7 +22,7 @@ LIMITS = [
 ]
 
 st.title("How it works")
-st.caption(":orange[The app shows demo data for now: detection and homography aren't connected yet.]")
+st.caption("Connected for the sample clip. Other clips need their own court points and detections.")
 
 st.subheader("From video to map")
 for column, (number, (name, description, status)) in zip(st.columns(5), enumerate(PIPELINE_STEPS, start=1)):
