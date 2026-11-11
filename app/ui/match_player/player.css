@@ -69,6 +69,15 @@
   gap: 1rem;
 }
 
+.clip-wrap { position: relative; }
+
+.boxes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none; /* clicks must still reach the video controls */
+}
+
 .clip {
   width: 100%;
   display: block;
@@ -183,6 +192,8 @@ svg {
 .dots .team-a circle { fill: var(--team-a); }
 .dots .team-b circle { fill: var(--team-b); }
 .dots .ball circle { fill: var(--ball); stroke: rgba(255, 77, 77, 0.35); stroke-width: 0.14; }
+
+.dots .ball text { fill: var(--ball); font-size: 0.4px; }
 
 .dots text {
   font-size: 0.32px;

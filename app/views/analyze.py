@@ -1,8 +1,10 @@
 """Upload a clip, process it, and show the video beside the 2D court."""
+import filecmp
+
 import streamlit as st
 
 from core.config import DETECTION_CLASSES, SAMPLE_CLIP
-from core.demo_data import HZ, make_demo_tracks
+from core.tracks import build_boxes, build_tracks
 from core.video_io import get_duration, publish_clip, save_upload
 from ui import state
 from ui.match_player import render_match_player
@@ -33,7 +35,8 @@ def confidence_sliders() -> dict[str, float]:
     }
     state.set_confidences(chosen)
     st.caption("A detection below its class threshold is dropped: lower finds more, but adds false detections. "
-               ":orange[No effect yet, because the backend doesn't exist.]")
+               "Bike, player and ball sliders apply to the sample clip; goals are not detected yet, and nothing "
+               "below 0.25 exists because the saved detections start there.")
     return chosen
 
 
@@ -42,21 +45,26 @@ def clip_screen(path, name):
     st.caption(f"{name} · {path.stat().st_size / 1e6:.1f} MB")
     confidences = confidence_sliders()
     with st.container(horizontal=True):
-        process = st.button("Process clip", type="primary", help="Shows demo data until the backend exists")
+        process = st.button("Process clip", type="primary", help="Maps the saved detections of the sample clip onto the court")
         st.button("Choose another clip", on_click=state.clear_clip)
     if process:
-        try:
-            tracks = make_demo_tracks(get_duration(path))
-        except ValueError:
-            st.error("This file could not be read as a video.")
+        if path != SAMPLE_CLIP and not filecmp.cmp(path, SAMPLE_CLIP, shallow=False):   # an upload of the sample file counts too
+            st.error("Only the sample clip (data/cycle-ball.mp4) can be mapped for now: the court points were picked for its "
+                     "camera angle, and its detections are precomputed.")
         else:
-            state.set_run({"clip_name": publish_clip(path), "tracks": tracks, "hz": HZ, "confidences": confidences})
+            tracks, hz = build_tracks(get_duration(path), confidences)
+            if len(tracks) < 5:    # the map needs 2 riders per team and the ball
+                st.error("Too few detections at these thresholds: the map needs both teams and the ball. Lower the sliders.")
+                return
+            state.set_run({"clip_name": publish_clip(path), "tracks": tracks, "hz": hz, "confidences": confidences,
+                           "boxes": build_boxes(confidences)})
             st.rerun()
 
 
 def results_screen(run):
-    st.caption(":orange[Demo data: the map dots are fake, and the video has no detections yet.]")
-    render_match_player(f"/app/static/{run['clip_name']}", run["tracks"], run["hz"])
+    st.caption("Boxes on the video are the raw detections. Dots on the map are the two teams (colour clustering) and the "
+               "ball, with gaps filled by interpolation.")
+    render_match_player(f"/app/static/{run['clip_name']}", run["tracks"], run["hz"], run["boxes"])
     thresholds = " · ".join(f"{name.capitalize()} {value:.2f}" for name, value in run["confidences"].items())
     st.caption(f"Confidence thresholds: {thresholds}")
     st.button("Process another clip", on_click=state.clear_clip)

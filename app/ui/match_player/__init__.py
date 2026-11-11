@@ -12,5 +12,5 @@ _component = st.components.v2.component(
 )
 
 
-def render_match_player(video_url: str, tracks: list[dict], hz: int) -> None:
-    _component(data={"videoUrl": video_url, "tracks": tracks, "hz": hz}, key="match_player")
+def render_match_player(video_url: str, tracks: list[dict], hz: int, boxes: list[list[list[int]]]) -> None:
+    _component(data={"videoUrl": video_url, "tracks": tracks, "hz": hz, "boxes": boxes}, key="match_player")
