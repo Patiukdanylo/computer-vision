@@ -1,0 +1,43 @@
+# Settings for data/prepare_keypoint_dataset.py: the court keypoint dataset (YOLO pose format) for the extra mile
+# "automated keypoints". Notebook 08 reads this file too. All paths are relative to the repo root.
+
+# Reference labels: 14 court keypoints, pixel position + court position in metres (tools/measure_court_keypoints.py).
+reference: data/court_reference.json
+video: data/cycle-ball.mp4
+# The detector's boxes, only used to flag keypoints hidden behind a rider or bike (for the error analysis).
+detections: models/detections.csv
+occluder_confidence: 0.5
+output_dir: data/court-keypoints-dataset           # court layout (K0, K1): 1 object, 14 keypoints
+landmarks_output_dir: data/court-landmarks-dataset # landmarks layout (K2): 14 objects, 1 keypoint each, same images
+# K2 box around each landmark, in full-frame pixels (~25 px at the model's 640 input): the landmark plus the lines
+# that meet there. The network sees much more context than the box; the box only sets which grid cells predict it.
+landmark_box_px: 120
+
+# Saved images are half resolution (1512 x 539). Training resizes them to 640 wide anyway.
+image_width: 1512
+jpeg_quality: 95
+
+# Same time-based split as the detector (configs/dataset.yaml): frames 1-234 are val, the rest train.
+val_first_frame: 1
+val_last_frame: 234
+# Every 10th frame: about half the frames are copies of the previous one, and neighbours barely differ.
+frame_step: 10
+
+# Synthetic camera motion. The camera is static, so without it every label would sit on the same pixel and the model
+# could learn "the centre spot is at (1483, 825)" without looking at the image. Each extra view is the same frame seen
+# by a virtual camera that pans, tilts, rolls and zooms around the real camera's position. A rotating camera gives
+# an exact homography for the whole picture (riders and goals too), so the views look like real footage.
+# Focal length of the real camera in pixels: a rough estimate from the reference homography (image centre assumed in
+# the middle). The warps only need to look like a plausible camera, so a rough value is enough.
+focal_px: 2900
+extra_views:            # warped views per frame, on top of the original view
+  train: 3
+  val: 2
+pan_deg: 10             # left/right, uniform in [-10, 10]
+tilt_deg: 4             # up/down
+roll_deg: 3             # rotation around the lens axis
+zoom: [0.85, 1.8]       # 1 = as filmed, 1.8 = zoomed in (about half the court visible), < 1 = black borders
+min_visible: 4          # resample a view with fewer keypoints in the picture (a homography needs 4)
+seed:
+  train: 0
+  val: 1
