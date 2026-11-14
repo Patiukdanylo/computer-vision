@@ -10,6 +10,10 @@ STATIC_DIR = ROOT / "app" / "static"
 COURT_LENGTH = 14.0
 COURT_WIDTH = 11.0
 
+# Where the pixel -> court homography comes from: "keypoints" (court keypoint model, models/court_homography.json,
+# notebook 08) or "manual" (points clicked by hand, data/court_keypoints.json). Keypoints fall back to manual.
+HOMOGRAPHY_SOURCE = "keypoints"
+
 # Classes in our labelled dataset, and the starting point for each confidence slider
 DETECTION_CLASSES = ("player", "ball", "bike", "goal")
 # Bike and player at 0.5: below that the model adds duplicate boxes (error analysis). Ball low, it scores low even when right.

@@ -35,6 +35,8 @@ data/frames/
 data/labelled/*
 !data/labelled/*.ndjson
 data/cycle-ball-dataset/
+data/court-keypoints-dataset/
+data/court-landmarks-dataset/
 reports/eda/
 # Local only (modeling)
 PROGRESS.md
