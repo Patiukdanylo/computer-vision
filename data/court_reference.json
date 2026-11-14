@@ -1,0 +1,206 @@
+{
+  "about": "Court keypoints of data/cycle-ball.mp4, measured by tools/measure_court_keypoints.py on the median background plate. px = pixel on the full 3024 x 1078 frame, m = court position in metres (x along the 14 m length from the left end line, y from the far board towards the camera).",
+  "frame_size": [
+    3024,
+    1078
+  ],
+  "keypoints": {
+    "far_left_corner": {
+      "px": [
+        700.49,
+        702.3
+      ],
+      "m": [
+        0.0,
+        0.0
+      ]
+    },
+    "far_right_corner": {
+      "px": [
+        2335.77,
+        714.29
+      ],
+      "m": [
+        14.0,
+        0.0
+      ]
+    },
+    "left_goal_far_post": {
+      "px": [
+        493.83,
+        783.69
+      ],
+      "m": [
+        0.0,
+        4.25
+      ]
+    },
+    "left_goal_near_post": {
+      "px": [
+        366.94,
+        833.66
+      ],
+      "m": [
+        0.0,
+        6.18
+      ]
+    },
+    "right_goal_far_post": {
+      "px": [
+        2511.89,
+        801.55
+      ],
+      "m": [
+        14.0,
+        4.32
+      ]
+    },
+    "right_goal_near_post": {
+      "px": [
+        2626.64,
+        858.4
+      ],
+      "m": [
+        14.0,
+        6.37
+      ]
+    },
+    "centre_spot": {
+      "px": [
+        1482.82,
+        825.01
+      ],
+      "m": [
+        7.0,
+        5.5
+      ]
+    },
+    "inner_circle_far": {
+      "px": [
+        1496.52,
+        771.93
+      ],
+      "m": [
+        7.0,
+        3.5
+      ]
+    },
+    "inner_circle_near": {
+      "px": [
+        1467.16,
+        889.02
+      ],
+      "m": [
+        7.0,
+        7.5
+      ]
+    },
+    "inner_circle_left": {
+      "px": [
+        1175.21,
+        821.02
+      ],
+      "m": [
+        5.0,
+        5.5
+      ]
+    },
+    "inner_circle_right": {
+      "px": [
+        1793.91,
+        826.12
+      ],
+      "m": [
+        9.0,
+        5.5
+      ]
+    },
+    "outer_circle_far": {
+      "px": [
+        1505.69,
+        735.35
+      ],
+      "m": [
+        7.0,
+        1.5
+      ]
+    },
+    "outer_circle_left": {
+      "px": [
+        867.94,
+        818.49
+      ],
+      "m": [
+        3.0,
+        5.5
+      ]
+    },
+    "outer_circle_right": {
+      "px": [
+        2106.94,
+        828.7
+      ],
+      "m": [
+        11.0,
+        5.5
+      ]
+    }
+  },
+  "H_px_to_m": [
+    [
+      -0.008713303206864307,
+      -0.022371812735186028,
+      21.826529122579853
+    ],
+    [
+      0.0004690465981191465,
+      -0.06471549198118749,
+      45.1307231078864
+    ],
+    [
+      1.172108823369704e-05,
+      -0.0028880427896602607,
+      1.0
+    ]
+  ],
+  "checks": {
+    "left_end_line_rms_px": 0.25349304557581104,
+    "right_end_line_rms_px": 0.2913290647978814,
+    "far_board_edge_rms_px": 0.894850923701767,
+    "inner_circle_far_snapped": true,
+    "inner_circle_near_snapped": true,
+    "inner_circle_left_snapped": true,
+    "inner_circle_right_snapped": true,
+    "outer_circle_far_snapped": true,
+    "outer_circle_left_snapped": true,
+    "outer_circle_right_snapped": true,
+    "label_reprojection_error_m": {
+      "far_left_corner": 0.014,
+      "far_right_corner": 0.008,
+      "left_goal_far_post": 0.01,
+      "left_goal_near_post": 0.023,
+      "right_goal_far_post": 0.009,
+      "right_goal_near_post": 0.027,
+      "centre_spot": 0.041,
+      "inner_circle_far": 0.098,
+      "inner_circle_near": 0.056,
+      "inner_circle_left": 0.012,
+      "inner_circle_right": 0.012,
+      "outer_circle_far": 0.083,
+      "outer_circle_left": 0.014,
+      "outer_circle_right": 0.017
+    },
+    "inner_circle_radius_m": [
+      1.975,
+      0.024
+    ],
+    "outer_circle_radius_m": [
+      3.96,
+      0.078
+    ],
+    "circle_points_used": [
+      180,
+      159
+    ]
+  }
+}
