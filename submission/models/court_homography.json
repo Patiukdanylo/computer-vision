@@ -1,0 +1,166 @@
+{
+  "about": "Pixel -> court metres for this clip, from the court keypoint model (tools/auto_homography.py).",
+  "video": "cycle-ball.mp4",
+  "model": "court_keypoints.pt",
+  "date": "2026-11-13",
+  "frames_sampled": 30,
+  "H_px_to_m": [
+    [
+      -0.009219454182033565,
+      -0.023141873238318098,
+      22.683791790341324
+    ],
+    [
+      0.0005439396011176622,
+      -0.06926977566125606,
+      48.31476806058158
+    ],
+    [
+      1.5574644832889793e-05,
+      -0.0029899945334790202,
+      1.0
+    ]
+  ],
+  "landmarks": {
+    "far_left_corner": {
+      "px": [
+        699.2,
+        702.0
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.062,
+      "spread_px": 4.1
+    },
+    "far_right_corner": {
+      "px": [
+        2335.9,
+        716.6
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.065,
+      "spread_px": 3.2
+    },
+    "left_goal_far_post": {
+      "px": [
+        493.8,
+        786.1
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.13,
+      "spread_px": 3.4
+    },
+    "left_goal_near_post": {
+      "px": [
+        367.6,
+        833.9
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.036,
+      "spread_px": 1.5
+    },
+    "right_goal_far_post": {
+      "px": [
+        2512.9,
+        804.7
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.117,
+      "spread_px": 2.1
+    },
+    "right_goal_near_post": {
+      "px": [
+        2628.3,
+        858.9
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.033,
+      "spread_px": 1.1
+    },
+    "centre_spot": {
+      "px": [
+        1486.7,
+        818.9
+      ],
+      "frames_found": 29,
+      "used": true,
+      "error_m": 0.165,
+      "spread_px": 3.4
+    },
+    "inner_circle_far": {
+      "px": [
+        1499.1,
+        765.3
+      ],
+      "frames_found": 27,
+      "used": false,
+      "error_m": 0.431,
+      "spread_px": 4.2
+    },
+    "inner_circle_near": {
+      "px": [
+        1466.1,
+        891.9
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.207,
+      "spread_px": 1.7
+    },
+    "inner_circle_left": {
+      "px": [
+        1176.5,
+        819.8
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.04,
+      "spread_px": 1.7
+    },
+    "inner_circle_right": {
+      "px": [
+        1795.0,
+        825.1
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.035,
+      "spread_px": 1.5
+    },
+    "outer_circle_far": {
+      "px": [
+        1505.6,
+        735.4
+      ],
+      "frames_found": 28,
+      "used": true,
+      "error_m": 0.04,
+      "spread_px": 3.3
+    },
+    "outer_circle_left": {
+      "px": [
+        864.7,
+        818.4
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.053,
+      "spread_px": 3.4
+    },
+    "outer_circle_right": {
+      "px": [
+        2106.2,
+        827.5
+      ],
+      "frames_found": 30,
+      "used": true,
+      "error_m": 0.049,
+      "spread_px": 2.0
+    }
+  }
+}
