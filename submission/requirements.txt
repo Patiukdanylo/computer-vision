@@ -1,0 +1,12 @@
+# Python 3.11 or 3.12 (the app and notebooks were tested on 3.11; notebook 02's Mac runs used 3.14.8). Training runs on Colab (GPU); everything else runs locally.
+
+# YOLO training and inference; brings torch, OpenCV (cv2.findHomography), numpy, pandas, matplotlib
+ultralytics>=8.4,<9
+# Dashboard; pinned because custom styling can break on upgrades
+streamlit==1.66.1
+# Analytics charts
+plotly==7.1.0
+# Used by tools/prepare_dataset.py (writes the dataset's data.yaml)
+pyyaml
+# Running the notebooks locally (VS Code / Jupyter)
+ipykernel

@@ -1,0 +1,21 @@
+"""Paths and settings shared across the app."""
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+SAMPLE_CLIP = ROOT / "data" / "cycle-ball.mp4"
+UPLOADS_DIR = ROOT / "outputs" / "uploads"
+STATIC_DIR = ROOT / "app" / "static"
+
+# International cycle ball court, in metres
+COURT_LENGTH = 14.0
+COURT_WIDTH = 11.0
+
+# Where the pixel -> court homography comes from: "keypoints" (court keypoint model, models/court_homography.json,
+# notebook 08) or "manual" (points clicked by hand, data/court_keypoints.json). Keypoints fall back to manual.
+HOMOGRAPHY_SOURCE = "keypoints"
+
+# Classes in our labelled dataset, and the starting point for each confidence slider
+DETECTION_CLASSES = ("player", "ball", "bike", "goal")
+# Bike and player at 0.5: chosen from round 1 of the error analysis (below that the 640 model added duplicate boxes). Round 2 (960)
+# is best at player 0.25 and bike 0.4 but was not re-tuned (notebook 05 §8). Ball low: it scores low even when right.
+DEFAULT_CONFIDENCES = {"player": 0.5, "ball": 0.25, "bike": 0.5, "goal": 0.25}
